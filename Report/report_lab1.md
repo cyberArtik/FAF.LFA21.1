@@ -253,6 +253,7 @@ Enter a string to check if it belongs to the language (type 'exit' to quit):
 ```
 
 - Manual input
+
 ![Valid](Manualright.png)
 
 ![Invalid](Manualleft.png)
