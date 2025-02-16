@@ -1,11 +1,11 @@
 export class FiniteAutomaton {
     Q: Set<string>; // States
-    Sigma: Set<string>;  // Alphabet
+    Sigma: Set<string>; // Alphabet
     Delta: Map<string, Map<string, Set<string>>>; // Transitions
     Q0: string; // Initial state
-    QF: string; // Final state
+    QF: Set<string>; // Final states
 
-    constructor(Q: Set<string>, Sigma: Set<string>, Delta: Map<string, Map<string, Set<string>>>, Q0: string, QF: string) {
+    constructor(Q: Set<string>, Sigma: Set<string>, Delta: Map<string, Map<string, Set<string>>>, Q0: string, QF: Set<string>) {
         this.Q = Q;
         this.Sigma = Sigma;
         this.Delta = Delta;
@@ -13,7 +13,7 @@ export class FiniteAutomaton {
         this.QF = QF;
     }
 
-    stringBelongToLanguage(inputString: string): boolean {
+    doesStringBelongToLanguage(inputString: string): boolean {
         let currentStates = new Set([this.Q0]); 
         console.log(`\nChecking string: "${inputString}"`);
 
@@ -21,7 +21,7 @@ export class FiniteAutomaton {
             console.log(`Processing letter: "${letter}"`);
 
             if (!this.Sigma.has(letter)) {
-                console.log(`Invalid character detected: "${letter}" is not in alphabet.`);
+                console.log(`Invalid character "${letter}".`);
                 return false;
             }
 
@@ -29,8 +29,7 @@ export class FiniteAutomaton {
 
             for (const state of currentStates) {
                 if (this.Delta.has(state) && this.Delta.get(state)!.has(letter)) {
-                    const possibleStates = this.Delta.get(state)!.get(letter)!;
-                    possibleStates.forEach((s) => nextStates.add(s));
+                    this.Delta.get(state)!.get(letter)!.forEach((s) => nextStates.add(s));
                 }
             }
 
@@ -43,7 +42,7 @@ export class FiniteAutomaton {
             console.log(`Possible next states: ${Array.from(currentStates).join(", ")}`);
         }
 
-        const isValid = currentStates.has(this.QF);
+        const isValid = Array.from(currentStates).some(state => this.QF.has(state));
         console.log(`Final states: ${Array.from(currentStates).join(", ")}`);
         console.log(`Result: "${inputString}" is ${isValid ? "VALID ✓" : "INVALID ✗"}`);
 
@@ -63,13 +62,13 @@ export class FiniteAutomaton {
             if (transitions.length === 0) break;
 
             const [letter, nextStates] = transitions[Math.floor(Math.random() * transitions.length)];
-            const nextState = Array.from(nextStates)[0];
+            const nextState = Array.from(nextStates)[Math.floor(Math.random() * nextStates.size)];
 
             result += letter;
             currentState = nextState;
             steps++;
 
-            if (currentState === this.QF) {
+            if (this.QF.has(currentState)) {
                 return result;
             }
         }

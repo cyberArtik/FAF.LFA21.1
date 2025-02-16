@@ -37,14 +37,12 @@ for (let i = 0; i < 5; i++) {
 }
 
 const finiteAutomaton = grammar.toFiniteAutomaton();
-console.log("\nConverted Finite Automaton:");
-console.log(finiteAutomaton.toString());
 
 console.log("\nTesting random strings with the Finite Automaton:");
 for (let i = 0; i < 5; i++) {
     const testString = generateRandomString(vT);
     console.log(`\nTest string ${i + 1}: ${testString}`);
-    const belongs = finiteAutomaton.stringBelongToLanguage(testString);
+    const belongs = finiteAutomaton.doesStringBelongToLanguage(testString);
     console.log(`String belongs to language: ${belongs}`);
 }
 
@@ -61,7 +59,7 @@ function promptInput() {
             console.log("Exiting...");
             rl.close();
         } else {
-            const belongs = finiteAutomaton.stringBelongToLanguage(inputString);
+            const belongs = finiteAutomaton.doesStringBelongToLanguage(inputString);
             console.log(`String belongs to language: ${belongs}`);
             promptInput();
         }

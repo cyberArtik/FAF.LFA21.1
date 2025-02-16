@@ -1,3 +1,5 @@
+import { FiniteAutomaton } from './FiniteAutomaton';
+
 export class Grammar {
     VN: Set<string>;
     VT: Set<string>;
@@ -40,29 +42,23 @@ export class Grammar {
     }
 
     toFiniteAutomaton(): FiniteAutomaton {
-        const qF = "q_F"; 
-        const q = new Set([...this.VN, qF]);
+        const qF = new Set(["q_F"]); 
+        const q = new Set([...this.VN, ...qF]);
         const sigma = new Set([...this.VT]);
         const q0 = this.S;
         const delta = new Map<string, Map<string, Set<string>>>();
 
         for (const [key, products] of this.P.entries()) {
             for (const product of products) {
-                let nonTerminal = "";
-                let terminal = "";
+                const terminal = product[0];
+                const nonTerminal = product.length > 1 ? product[1] : "q_F";
 
-                for (const symbol of product) {
-                    if (this.VN.has(symbol)) {
-                        nonTerminal = symbol;
-                        continue;
-                    }
-                    terminal = symbol;
-                }
+                if (!this.VT.has(terminal)) continue;
 
                 const stateTransitions = delta.get(key) ?? new Map<string, Set<string>>();
                 const targetStates = stateTransitions.get(terminal) ?? new Set<string>();
 
-                targetStates.add(nonTerminal || qF);
+                targetStates.add(nonTerminal);
                 stateTransitions.set(terminal, targetStates);
                 delta.set(key, stateTransitions);
             }
@@ -85,5 +81,3 @@ export class Grammar {
         return output;
     }
 }
-
-import { FiniteAutomaton } from './FiniteAutomaton';
