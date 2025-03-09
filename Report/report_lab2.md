@@ -1,4 +1,4 @@
-# Topic: Intro to formal languages. Regular grammars. Finite Automata.
+# Determinism in Finite Automata. Conversion from NDFA 2 DFA. Chomsky Hierarchy.
 
 ### Course: Formal Languages & Finite Automata
 ### Author: Ilico Artemie
@@ -239,14 +239,14 @@ def visualize_fa(fa: FiniteAutomata2, title):
 
 - Here we can observe the output:
 
-![NFA2Grammar](report/output1.png)
+![NFA2Grammar](output1.png)
 
-![NFA2DFA](report/output2.png)
+![NFA2DFA](output2.png)
 
-![DFA Grammar Production Rules +/ isDeterministic](report/output3.png)
+![DFA Grammar Production Rules +/ isDeterministic](output3.png)
 
 
-![Visualization](report/vis.png)
+![Visualization](vis.png)
 
 
 ## References
