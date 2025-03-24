@@ -229,20 +229,6 @@ Rather than implementing a generic lexer, our solution is tailored to the specif
 
 Beyond its practical functionality, the implementation serves as an educational tool that concretely illustrates the theoretical concepts of lexical analysis, linking abstract notions like lexemes and tokens to their practical implementation. This bridge between theory and practice enhances understanding of compiler construction principles.
 
-### Future Work
-
-The current implementation opens several avenues for future enhancement:
-
-We could develop a comprehensive parser for syntactic analysis that builds upon the tokenized output to construct an abstract syntax tree (AST) representing the program's structure. This would enable higher-level understanding of the program's meaning and intent.
-
-Extending language support to incorporate additional features would enrich the scheduling capabilities. Features such as recurring events, event categories, or priority levels would make the language more expressive and useful in real-world scheduling scenarios.
-
-Enhancing the error handling and reporting mechanisms would provide more user-friendly diagnostic messages that facilitate debugging and correction of lexical errors. More contextual error messages could guide users toward solutions rather than merely pointing out problems.
-
-Implementing semantic analysis capabilities would allow validation of the logical consistency of scheduling operations beyond their syntactic correctness. This could catch errors such as scheduling conflicts or invalid time specifications before they cause problems at runtime.
-
-Performance optimization for handling large scheduling files with thousands of events could be achieved through more efficient buffering mechanisms or parallel processing techniques. This would ensure the lexer remains responsive even when processing very large input files.
-
 ## References
 
 ****
