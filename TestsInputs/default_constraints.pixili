@@ -1,0 +1,22 @@
+// Test file for default constraints in Pixili
+
+default_day = event "Read" at 12:30 for 1h;
+default_month = event "Empty the dishwasher" on 12 March at 12:30;
+
+default_find = event "Do the lab" between 21:00 and 22:40 find;
+
+default_repeat = event "Brush teeth" daily at 12:00 for 10m;
+
+default_until = event "Brush teeth" daily at 14:30 for 10m repeat until 31.12.2028;
+
+default_count = event "Brush teeth" daily at 14:30 for 10m repeat 10 times;
+
+complex_default = event "Study session" daily at 16:00 for 2h repeat 30 times find between 16:00 and 20:00;
+
+time_format = event "Coffee break" daily at 3:30PM for 15m;
+
+// Date format variations
+date_format1 = event "Monthly review" on 1st of each month at 10:00 for 1h;
+date_format2 = event "Quarterly meeting" on 15 January, 15 April, 15 July, 15 October at 9:00 for 2h;
+
+location_default = event "Team lunch" weekly on Friday at 12:30 for 1h at "Cafe";

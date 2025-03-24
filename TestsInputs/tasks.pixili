@@ -1,0 +1,15 @@
+// Test file for task syntax in Pixili
+
+t = task named "kms" at 21:00 on each Monday with alarm;
+
+t1 = task named "respawn" at 21:15 on each Monday;
+
+t3 = task named "respawn" at 9:00PM on each Monday;
+
+t4 = task named "Get rid of trash" find between 21:00 and 21:30 using random;
+
+t5 = task named "Weekly review" at 16:00 on each Friday, Saturday;
+
+t6 = task named "Birthday reminder" at 9:00 on 15 March;
+
+t7 = task named "Practice guitar" at 18:30 for 30m on each Tuesday;

@@ -1,0 +1,15 @@
+// Test file for pomodoro syntax in Pixili
+
+pmd = pomodoro "Drawing" at 14:30 repeat 4 times;
+
+pmd2 = pomodoro "LAB" at 15:30 repeat 4 times with 5m break;
+
+pmd3 = pomodoro "Coding" at 2:30PM repeat 3 times;
+
+pmd4 = pomodoro "Writing" at 10:00 for 30m repeat 2 times;
+
+pmd5 = pomodoro "Study" at 16:45 for 25m repeat 3 times with 10m break;
+
+pmd6 = pomodoro "Presentation prep" on 14 March at 13:00 repeat 5 times;
+
+pmd7 = pomodoro "Morning routine" on each Monday, Wednesday, Friday at 8:00 repeat 3 times;

@@ -1,0 +1,18 @@
+// Test file for event syntax in Pixili
+
+e1 = event "Team Sync" on 12 March from 11:00 to 12:00 at "Office";
+
+e2 = event "Doctor's appointment" on 12.03 from 10:00 to 11:00;
+
+e3 = event "Weekly Report" every Monday from 09:00 to 10:00;
+e4 = event "Gym Session" from 07:00 to 08:00;
+
+e5 = event "Dinner with friends" on 15 March from 7:30PM to 9:30PM;
+
+e6 = event "Language class" every Tuesday, Thursday from 18:00 to 19:30;
+
+e7 = event "Morning run" every Monday, Wednesday, Friday from 06:30 for 45m;
+
+e8 = event "Spring break" from 20 March to 27 March;
+
+e9 = event "Project meeting" on 18 March at 14:00 for 1h 30m;
