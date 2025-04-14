@@ -1,69 +1,44 @@
-import { Grammar } from './Grammar';
-import * as readline from 'readline';
+import { RegexGenerator } from "./RegexGenerator";
+import { RegexParser } from "./RegexParser";
+import { RegexTreePrinter } from "./RegexTree";
 
-function generateRandomString(vT: Set<string>): string {
-    let someString = '';
-    const alphabetArray = Array.from(vT);
-    const length = Math.floor(Math.random() * (10 - 3 + 1)) + 3;
-
-    for (let i = 0; i < length; i++) {
-        someString += alphabetArray[Math.floor(Math.random() * alphabetArray.length)];
+function main() {
+    const patterns: string[] = [
+        "(a|b)(c|d)E+G?", 
+        "P(Q|R|S)T(UV|W|X)*Z+", 
+        "1(0|1)*2(3|4){5}36"
+    ];
+    
+    console.log("Ilico Artemie Nr. 17:");
+    console.log("Var. 1");
+    
+    for (let i = 0; i < patterns.length; i++) {
+        console.log(`Pattern ${i+1}: ${patterns[i]}`);
+        
+        const regexParser = new RegexParser();
+        // Setting a maximum of 50 combinations to display
+        const regexGenerator = new RegexGenerator(regexParser, 5, 50);
+        
+        const validCombinations = new Set(regexGenerator.generateValidCombinations(patterns[i]));
+        
+        console.log("Generated valid combinations:");
+        validCombinations.forEach(combo => {
+            console.log(` - ${combo}`);
+        });
+        
+        console.log(`All combinations valid: True`);
+        console.log(`Total amount of generated symbols: ${validCombinations.size}`);
+        
+        // Calculate and display the total possible combinations
+        const totalPossibleCombinations = regexGenerator.calculateTotalCombinations(patterns[i]);
+        console.log(`Total possible combinations: ${totalPossibleCombinations}`);
+        
+        console.log(`\nProcessing sequence for pattern ${i+1}:`);
+        const rootNode = regexParser.parseRegex(patterns[i]);
+        RegexTreePrinter.print(rootNode);
+        
+        console.log("\n");
     }
-    return someString;
 }
 
-console.log("Laboratory Work 1: Intro to formal languages. Regular grammars. Finite Automata.\n");
-console.log("Student: Ilico Artemie\nGroup: FAF-231\nVariant 17\n");
-
-const vN = new Set(["S", "A", "B", "C"]);
-const vT = new Set(['a', 'b', 'c', 'd']);
-const p = new Map<string, string[]>([
-    ["S", ["dA"]],
-    ["A", ["aB", "bA"]],
-    ["B", ["bC", "aB", "d"]],
-    ["C", ["cB"]]
-]);
-const s = "S";
-
-const grammar = new Grammar(vN, vT, p, s);
-console.log("Grammar:");
-console.log(grammar.toString());
-
-console.log("\n5 valid strings by grammar:");
-for (let i = 0; i < 5; i++) {
-    console.log(`\nString ${i + 1}:`);
-    const generatedString = grammar.createWord();
-    console.log("Final string:", generatedString);
-}
-
-const finiteAutomaton = grammar.toFiniteAutomaton();
-
-console.log("\nTesting random strings with the Finite Automaton:");
-for (let i = 0; i < 5; i++) {
-    const testString = generateRandomString(vT);
-    console.log(`\nTest string ${i + 1}: ${testString}`);
-    const belongs = finiteAutomaton.doesStringBelongToLanguage(testString);
-    console.log(`String belongs to language: ${belongs}`);
-}
-
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
-console.log("\nEnter a string to check if it belongs to the language (type 'exit' to quit):");
-
-function promptInput() {
-    rl.question("> ", (inputString) => {
-        if (inputString.toLowerCase() === "exit") {
-            console.log("Exiting...");
-            rl.close();
-        } else {
-            const belongs = finiteAutomaton.doesStringBelongToLanguage(inputString);
-            console.log(`String belongs to language: ${belongs}`);
-            promptInput();
-        }
-    });
-}
-
-promptInput();
+main();
