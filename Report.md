@@ -21,393 +21,129 @@ Regular expressions use operations like concatenation, union (alternatives), and
 
 ## Implementation description
 ****
-### Core Data Structures
+## Core Structure
 
-The implementation starts with defining the fundamental data structure for representing regex syntax trees:
+At the heart of the implementation is the `RegexNode` class which forms the building blocks of the AST:
 
 ```typescript
-export enum RegexNodeType {
-    Literal,
-    Alternation,
-    Concatenation,
-    Repetition
-}
-
 export class RegexNode {
-    type: RegexNodeType;
-    value: string = "";
-    children: RegexNode[] = [];
-    minRepeat: number = 0;
-    maxRepeat: number = 0;
+  type: RegexNodeType;
+  value: string = "";
+  children: RegexNode[] = [];
+  minRepeat: number = 0;
+  maxRepeat: number = 0;
 
-    constructor(type: RegexNodeType) {
-        this.type = type;
-    }
+  constructor(type: RegexNodeType) {
+    this.type = type;
+  }
 }
 ```
 
-This structure allows the representation of any regex pattern as a tree of nodes. Each node has a type indicating its function (literal character, alternation, concatenation, or repetition), a value for literals, child nodes for nested expressions, and repeat parameters for quantifiers.
+Each node has a specific type (literal, alternation, concatenation, or repetition) that determines how it's processed. This design enables the representation of complex regex patterns as a hierarchical structure.
 
-### The Parser
+## Parsing Process
 
-The `RegexParser` class transforms a regex string into an abstract syntax tree:
+The `RegexParser` class transforms regex strings into ASTs through recursive descent parsing:
 
 ```typescript
-import { RegexNode, RegexNodeType } from "./RegexNode";
-
 export class RegexParser {
-    parseRegex(pattern: string): RegexNode {
-        let position = { current: 0 };
-        return this.parseExpression(pattern, position);
-    }
+  parseRegex(pattern: string): RegexNode {
+    let position = { current: 0 };
+    return this.parseExpression(pattern, position);
+  }
 
-    private parseExpression(pattern: string, position: { current: number }): RegexNode {
-        const concatNode = new RegexNode(RegexNodeType.Concatenation);
-        
-        while (position.current < pattern.length) {
-            const currentChar = pattern[position.current];
-            
-            if (currentChar === ')') break;
-            
-            if (currentChar === '|') {
-                position.current++; // Skip '|'
-                const alternationNode = new RegexNode(RegexNodeType.Alternation);
-                alternationNode.children.push(concatNode);
-                alternationNode.children.push(this.parseExpression(pattern, position));
-                return alternationNode;
-            }
-            
-            const termNode = this.parseTerm(pattern, position);
-            concatNode.children.push(termNode);
-        }
-        
-        return concatNode;
-    }
+  // Additional parsing methods would be implemented here
+}
 ```
 
-The parsing process is recursive, handling nested expressions through a series of methods. The `parseExpression` method identifies concatenations and alternations (pipe symbol `|`), while `parseTerm` handles individual terms including literals, groups, and repetition operators:
+It walks through the input pattern character by character, creating appropriate nodes based on regex operators it encounters. When it finds literals (basic characters), it creates literal nodes. For alternation symbols (`|`), it builds branches in the tree. Adjacent elements become children of concatenation nodes, while repetition operators (`*`, `+`, `?`, `{n,m}`) create repetition nodes with specific min/max values.
+
+## Generation Logic
+
+The `RegexGenerator` takes a parsed AST and produces strings that match the pattern:
 
 ```typescript
-    private parseTerm(pattern: string, position: { current: number }): RegexNode {
-        const currentChar = pattern[position.current];
-        let baseNode: RegexNode;
-        
-        if (currentChar === '(') {
-            position.current++; // Skip '('
-            baseNode = this.parseExpression(pattern, position);
-            
-            if (position.current < pattern.length && pattern[position.current] === ')')
-                position.current++; // Skip ')'
-        } else {
-            // Handle literals
-            baseNode = new RegexNode(RegexNodeType.Literal);
-            baseNode.value = currentChar;
-            position.current++;
-        }
-        
-        // Check for repetition operators
-        if (position.current < pattern.length) {
-            const nextChar = pattern[position.current];
-            
-            if (nextChar === '+') {
-                position.current++;
-                return this.createRepetitionNode(baseNode, 1, -1); // 1 or more
-            } else if (nextChar === '*') {
-                position.current++;
-                return this.createRepetitionNode(baseNode, 0, -1); // 0 or more
-            } else if (nextChar === '?') {
-                position.current++;
-                return this.createRepetitionNode(baseNode, 0, 1); // 0 or 1
-            } else if (nextChar === '{') {
-                // Handle {n} or {n,m} repetition
-                // Parse min and max values
-                // ...
-                return this.createRepetitionNode(baseNode, minRepeat, maxRepeat);
-            }
-        }
-        
-        return baseNode;
-    }
-    
-    private createRepetitionNode(baseNode: RegexNode, minRepeat: number, maxRepeat: number): RegexNode {
-        const repetitionNode = new RegexNode(RegexNodeType.Repetition);
-        repetitionNode.minRepeat = minRepeat;
-        repetitionNode.maxRepeat = maxRepeat;
-        repetitionNode.children.push(baseNode);
-        return repetitionNode;
-    }
-```
-
-### The Generator
-
-Once the regex is parsed into an AST, the `RegexGenerator` class creates valid string combinations that match the pattern:
-
-```typescript
-import { RegexNode, RegexNodeType } from "./RegexNode";
-import { RegexParser } from "./RegexParser";
-
 export class RegexGenerator {
-    private _repetitionLimit: number;
-    private _regexParser: RegexParser;
-    private _maxCombinations: number;
-    
-    constructor(regexParser: RegexParser, repetitionLimit: number = 5, maxCombinations: number = 50) {
-        this._repetitionLimit = repetitionLimit;
-        this._regexParser = regexParser;
-        this._maxCombinations = maxCombinations;
-    }
+  private _repetitionLimit: number;
+  private _regexParser: RegexParser;
+  private _maxCombinations: number;
 
-    generateValidCombinations(pattern: string): string[] {
-        const rootNode = this._regexParser.parseRegex(pattern);
-        return this.generateCombinationsFromNode(rootNode);
-    }
+  constructor(regexParser: RegexParser, repetitionLimit: number = 5, maxCombinations: number = 50) {
+    this._repetitionLimit = repetitionLimit;
+    this._regexParser = regexParser;
+    this._maxCombinations = maxCombinations;
+  }
+
+  generateValidCombinations(pattern: string): string[] {
+    const rootNode = this._regexParser.parseRegex(pattern);
+    return this.generateCombinationsFromNode(rootNode);
+  }
+
+  // Additional generation methods would be implemented here
+}
 ```
 
-The generation logic recursively traverses the AST, creating valid combinations according to the node type:
+The generator works recursively through the AST, handling each node type differently. Literal nodes return their character value, alternation nodes select from their branches, concatenation nodes join results from each child, and repetition nodes duplicate their child content appropriately.
+
+The implementation includes safeguards to prevent exponential expansion: a repetition limit (default: 5) prevents infinite or excessive loops, and a maximum combinations limit (default: 50) caps total output.
+
+## Visualization and Analysis
+
+The implementation includes a `RegexTreePrinter` that displays the parsed tree structure:
 
 ```typescript
-    private generateCombinationsFromNode(node: RegexNode): string[] {
-        let results: string[] = [];
-        
-        switch (node.type) {
-            case RegexNodeType.Literal:
-                results.push(node.value);
-                break;
-                
-            case RegexNodeType.Alternation:
-                for (const child of node.children) {
-                    results.push(...this.generateCombinationsFromNode(child));
-                    if (results.length > this._maxCombinations) {
-                        results = results.slice(0, this._maxCombinations);
-                        break;
-                    }
-                }
-                break;
-                
-            case RegexNodeType.Concatenation:
-                // Start with empty string
-                results.push("");
-                
-                // For each child, generate combinations and append to current results
-                for (const child of node.children) {
-                    const childCombos = this.generateCombinationsFromNode(child);
-                    const newResults: string[] = [];
-                    
-                    for (const existingResult of results) {
-                        for (const childCombo of childCombos) {
-                            newResults.push(existingResult + childCombo);
-                            if (newResults.length >= this._maxCombinations) break;
-                        }
-                        if (newResults.length >= this._maxCombinations) break;
-                    }
-                    
-                    results = newResults.slice(0, this._maxCombinations);
-                }
-                break;
-```
-
-The handling of repetition nodes is particularly complex, as it needs to account for various quantifiers (`+`, `*`, `?`, `{n}`, `{n,m}`):
-
-```typescript
-            case RegexNodeType.Repetition:
-                const baseResults = this.generateCombinationsFromNode(node.children[0]);
-                results.push(""); // Empty case for * and ?
-                
-                if (node.minRepeat === 0 && node.maxRepeat === 1) { // ? (0 or 1)
-                    results.push(...baseResults);
-                } else if (node.minRepeat === 1 && node.maxRepeat === -1) { // + (1 or more)
-                    // Generate combinations for 1 to repetitionLimit
-                    for (let count = 1; count <= this._repetitionLimit; count++) {
-                        const combinations = this.generateRepetitions(baseResults, count);
-                        results.push(...combinations);
-                        if (results.length > this._maxCombinations) {
-                            results = results.slice(0, this._maxCombinations);
-                            break;
-                        }
-                    }
-                    if (results[0] === "") results.shift(); // Remove empty string for + operator
-                } else if (node.minRepeat === 0 && node.maxRepeat === -1) { // * (0 or more)
-                    // Generate combinations for 0 to repetitionLimit
-                    for (let count = 1; count <= this._repetitionLimit; count++) {
-                        const combinations = this.generateRepetitions(baseResults, count);
-                        results.push(...combinations);
-                        if (results.length > this._maxCombinations) {
-                            results = results.slice(0, this._maxCombinations);
-                            break;
-                        }
-                    }
-                } else { // {n} or {n,m}
-                    const max = node.maxRepeat === -1 
-                        ? this._repetitionLimit 
-                        : Math.min(node.maxRepeat, this._repetitionLimit);
-                    
-                    for (let count = node.minRepeat; count <= max; count++) {
-                        const combinations = this.generateRepetitions(baseResults, count);
-                        results.push(...combinations);
-                        if (results.length > this._maxCombinations) {
-                            results = results.slice(0, this._maxCombinations);
-                            break;
-                        }
-                    }
-                    
-                    if (node.minRepeat > 0 && results[0] === "") {
-                        results.shift(); // Remove empty string for {n,m} where n > 0
-                    }
-                }
-                break;
-        }
-        
-        return results.slice(0, this._maxCombinations);
-    }
-```
-
-A helper method `generateRepetitions` handles the specific case of repeating a set of base strings a given number of times:
-
-```typescript
-    private generateRepetitions(baseStrings: string[], count: number): string[] {
-        if (count === 0)
-            return [""];
-            
-        if (count === 1)
-            return baseStrings;
-            
-        const result: string[] = [];
-        const subResults = this.generateRepetitions(baseStrings, count - 1);
-        
-        for (const subResult of subResults) {
-            for (const baseStr of baseStrings) {
-                result.push(subResult + baseStr);
-                if (result.length >= this._maxCombinations) break;
-            }
-            if (result.length >= this._maxCombinations) break;
-        }
-        
-        return result.slice(0, this._maxCombinations);
-    }
-```
-
-### Visualizing the Parsing Process
-
-To help understand how the regex pattern is processed, the implementation includes a `RegexTreePrinter` class that displays the parsed tree structure:
-
-```typescript
-import { RegexNode, RegexNodeType } from "./RegexNode";
-
 export class RegexTreePrinter {
-    static print(node: RegexNode, depth: number = 0): void {
-        const indent = ' '.repeat(depth * 2);
-        
-        switch (node.type) {
-            case RegexNodeType.Literal:
-                console.log(`${indent}Literal: '${node.value}'`);
-                break;
-                
-            case RegexNodeType.Alternation:
-                console.log(`${indent}Alternation:`);
-                node.children.forEach((child) => this.print(child, depth + 1));
-                break;
-                
-            case RegexNodeType.Concatenation:
-                console.log(`${indent}Concatenation:`);
-                node.children.forEach((child) => this.print(child, depth + 1));
-                break;
-                
-            case RegexNodeType.Repetition:
-                const repInfo = `${node.minRepeat} to ${node.maxRepeat === -1 ? '∞' : node.maxRepeat}`;
-                console.log(`${indent}Repetition (${repInfo}):`);
-                node.children.forEach((child) => this.print(child, depth + 1));
-                break;
-        }
+  static print(node: RegexNode, depth: number = 0): void {
+    const indent = ' '.repeat(depth * 2);
+
+    switch (node.type) {
+      case RegexNodeType.Literal:
+        console.log(`${indent}Literal: '${node.value}'`);
+        break;
+      
+      case RegexNodeType.Alternation:
+        console.log(`${indent}Alternation:`);
+        node.children.forEach((child) => this.print(child, depth + 1));
+        break;
+      
+      // Additional cases would be implemented for other node types
     }
+  }
 }
 ```
 
-### Counting Possible Combinations
+The system also calculates the total number of possible combinations for a pattern by analyzing the structure of the AST. For each node type, it applies different counting rules: literal nodes contribute exactly one possibility, alternation nodes sum the counts from each alternative, concatenation nodes multiply the counts from each part, and repetition nodes apply combinatorial calculations.
 
-The system also includes functionality to calculate the total number of possible combinations for a given regex pattern:
+## Usage Example
 
-```typescript
-    calculateTotalCombinations(pattern: string): number {
-        const rootNode = this._regexParser.parseRegex(pattern);
-        return this.countCombinationsFromNode(rootNode);
-    }
-    
-    private countCombinationsFromNode(node: RegexNode): number {
-        switch (node.type) {
-            case RegexNodeType.Literal:
-                return 1; // A literal has exactly one possibility
-                
-            case RegexNodeType.Alternation:
-                // Sum the count from each alternative
-                return node.children.reduce((total, child) => 
-                    total + this.countCombinationsFromNode(child), 0);
-                
-            case RegexNodeType.Concatenation:
-                // Multiply the counts from each concatenated part
-                return node.children.reduce((total, child) => 
-                    total === 0 ? this.countCombinationsFromNode(child) 
-                                : total * this.countCombinationsFromNode(child), 1);
-                
-            case RegexNodeType.Repetition:
-                // Complex calculations based on repetition type
-                // ...
-        }
-        
-        return 0; // Fallback
-    }
-```
-
-## Main Program Execution
-
-The main function ties everything together, processing multiple regex patterns and displaying the results:
+A main function ties everything together:
 
 ```typescript
-import { RegexGenerator } from "./RegexGenerator";
-import { RegexParser } from "./RegexParser";
-import { RegexTreePrinter } from "./RegexTree";
-
 function main() {
-    const patterns: string[] = [
-        "(a|b)(c|d)E+G?", 
-        "P(Q|R|S)T(UV|W|X)*Z+", 
-        "1(0|1)*2(3|4){5}36"
-    ];
-    
-    console.log("Ilico Artemie Nr. 17:");
-    console.log("Var. 1");
-    
-    for (let i = 0; i < patterns.length; i++) {
-        console.log(`Pattern ${i+1}: ${patterns[i]}`);
-        
-        const regexParser = new RegexParser();
-        // Setting a maximum of 50 combinations to display
-        const regexGenerator = new RegexGenerator(regexParser, 5, 50);
-        
-        const validCombinations = new Set(regexGenerator.generateValidCombinations(patterns[i]));
-        
-        console.log("Generated valid combinations:");
-        validCombinations.forEach(combo => {
-            console.log(` - ${combo}`);
-        });
-        
-        console.log(`All combinations valid: True`);
-        console.log(`Total amount of generated symbols: ${validCombinations.size}`);
-        
-        // Calculate and display the total possible combinations
-        const totalPossibleCombinations = regexGenerator.calculateTotalCombinations(patterns[i]);
-        console.log(`Total possible combinations: ${totalPossibleCombinations}`);
-        
-        console.log(`\nProcessing sequence for pattern ${i+1}:`);
-        const rootNode = regexParser.parseRegex(patterns[i]);
-        RegexTreePrinter.print(rootNode);
-        
-        console.log("\n");
-    }
-}
+  const patterns = [
+    "(a|b)(c|d)E+G?",
+    "P(Q|R|S)T(UV|W|X)*Z+",
+    "1(0|1)*2(3|4){5}36"
+  ];
 
-main();
+  for (let i = 0; i < patterns.length; i++) {
+    console.log(`Pattern ${i+1}: ${patterns[i]}`);
+    
+    const regexParser = new RegexParser();
+    const regexGenerator = new RegexGenerator(regexParser, 5, 50);
+    
+    const validCombinations = new Set(regexGenerator.generateValidCombinations(patterns[i]));
+    console.log("Generated valid combinations:");
+    validCombinations.forEach(combo => {
+      console.log(` - ${combo}`);
+    });
+    
+    // Display additional information and visualize the tree
+  }
+}
 ```
 
+When processing a pattern like `"(a|b)(c|d)E+G?"`, the system parses it into an AST with concatenation at the root, identifies the alternation nodes for `(a|b)` and `(c|d)`, recognizes the repetition operators for `E+` and `G?`, and then generates valid combinations. This approach makes it possible to systematically generate all strings that match a given regex pattern, within practical limits.
 ## Conclusions / Screenshots / Results
 ****
 For each pattern, the system generates valid combinations and provides detailed information about the processing steps. Here's an example output for the pattern `(a|b)(c|d)E+G?`:
