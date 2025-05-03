@@ -1,69 +1,26 @@
-import { Grammar } from './Grammar';
-import * as readline from 'readline';
+import { ChomskyNormalForm } from "./ChomskyNormalForm";
+import { Grammar } from "./Grammar";
 
-function generateRandomString(vT: Set<string>): string {
-    let someString = '';
-    const alphabetArray = Array.from(vT);
-    const length = Math.floor(Math.random() * (10 - 3 + 1)) + 3;
+// Initialize grammar for Variant 17
+const grammar = new Grammar(
+    new Set<string>(["S", "A", "B", "C", "D", "E"]),
+    new Set<string>(["a", "b"]),
+    new Map<string, string[]>([
+        ["S", ["aA", "AC"]],
+        ["A", ["a", "ASC", "BC", "aD"]],
+        ["B", ["b", "bA"]],
+        ["C", ["ε", "BA"]],
+        ["D", ["abC"]],
+        ["E", ["aB"]]
+    ]),
+    "S"
+);
 
-    for (let i = 0; i < length; i++) {
-        someString += alphabetArray[Math.floor(Math.random() * alphabetArray.length)];
-    }
-    return someString;
-}
-
-console.log("Laboratory Work 1: Intro to formal languages. Regular grammars. Finite Automata.\n");
-console.log("Student: Ilico Artemie\nGroup: FAF-231\nVariant 17\n");
-
-const vN = new Set(["S", "A", "B", "C"]);
-const vT = new Set(['a', 'b', 'c', 'd']);
-const p = new Map<string, string[]>([
-    ["S", ["dA"]],
-    ["A", ["aB", "bA"]],
-    ["B", ["bC", "aB", "d"]],
-    ["C", ["cB"]]
-]);
-const s = "S";
-
-const grammar = new Grammar(vN, vT, p, s);
-console.log("Grammar:");
+console.log("\nGrammar before modifications:");
 console.log(grammar.toString());
 
-console.log("\n5 valid strings by grammar:");
-for (let i = 0; i < 5; i++) {
-    console.log(`\nString ${i + 1}:`);
-    const generatedString = grammar.createWord();
-    console.log("Final string:", generatedString);
-}
+ChomskyNormalForm.obtain(grammar);
 
-const finiteAutomaton = grammar.toFiniteAutomaton();
+console.log("\nGrammar after bringing it to CNF:");
+console.log(grammar.toString());
 
-console.log("\nTesting random strings with the Finite Automaton:");
-for (let i = 0; i < 5; i++) {
-    const testString = generateRandomString(vT);
-    console.log(`\nTest string ${i + 1}: ${testString}`);
-    const belongs = finiteAutomaton.doesStringBelongToLanguage(testString);
-    console.log(`String belongs to language: ${belongs}`);
-}
-
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
-console.log("\nEnter a string to check if it belongs to the language (type 'exit' to quit):");
-
-function promptInput() {
-    rl.question("> ", (inputString) => {
-        if (inputString.toLowerCase() === "exit") {
-            console.log("Exiting...");
-            rl.close();
-        } else {
-            const belongs = finiteAutomaton.doesStringBelongToLanguage(inputString);
-            console.log(`String belongs to language: ${belongs}`);
-            promptInput();
-        }
-    });
-}
-
-promptInput();
