@@ -330,7 +330,6 @@ export class ChomskyNormalForm {
         });
         
         grammar.P = newP;
-        
         const rhsToNonTerminal = new Map<string, string>();
         
         const binaryP = new Map<string, string[]>();
