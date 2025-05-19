@@ -284,10 +284,10 @@ The AST accurately represents the expression with proper operator precedence:
 4. The right child of the division is the subtraction operation `5-2`
 
 This structure correctly preserves the mathematical meaning of the original expression, demonstrating that our parser correctly handles:
-- Arithmetic operations with proper precedence
-- Nested expressions
-- Function application
-- Parenthesized grouping
+ Arithmetic operations with proper precedence
+ Nested expressions
+ Function application
+ Parenthesized grouping
 
 ## Conclusions
 
